@@ -28,8 +28,7 @@ export default function RootLayout({
             <h1 className="text-xl font-bold tracking-tight">AI 矢量化</h1>
           </div>
           <nav className="flex gap-4 text-sm font-medium text-slate-600">
-            <a href="#" className="hover:text-blue-600">API 接口</a>
-            <a href="#" className="hover:text-blue-600">定价</a>
+            <a href="#" className="hover:text-blue-600">技术支持：称头创意</a>
           </nav>
         </header>
         <main className="flex-1 flex flex-col items-center p-6 sm:p-12">
