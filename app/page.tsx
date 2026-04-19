@@ -8,9 +8,11 @@ export default function Home() {
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const [vectorizedSvg, setVectorizedSvg] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -36,6 +38,16 @@ export default function Home() {
     setVectorizedSvg(null);
     setError(null);
     setIsProcessing(true);
+    setProgress(0);
+
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    progressIntervalRef.current = setInterval(() => {
+      setProgress((prev) => {
+        const increment = prev < 50 ? Math.random() * 10 + 5 : Math.random() * 3 + 1;
+        const next = prev + increment;
+        return next > 95 ? 95 : next;
+      });
+    }, 500);
 
     const formData = new FormData();
     formData.append("image", selectedFile);
@@ -53,11 +65,19 @@ export default function Home() {
       }
 
       const svgText = await res.text();
-      setVectorizedSvg(svgText);
+      
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      setProgress(100);
+      
+      setTimeout(() => {
+        setVectorizedSvg(svgText);
+        setIsProcessing(false);
+      }, 500);
+
     } catch (err: any) {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
       console.error(err);
       setError(err.message || "发生未知错误，请稍后重试。");
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -148,9 +168,18 @@ export default function Home() {
               </div>
               <div className="w-full aspect-square max-h-[500px] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex items-center justify-center relative bg-[url('/checkers.svg')]">
                 {isProcessing ? (
-                  <div className="flex flex-col items-center gap-4 text-blue-600">
-                    <Loader2 className="w-10 h-10 animate-spin" />
-                    <span className="font-medium animate-pulse">AI 正在处理中，请稍候…</span>
+                  <div className="flex flex-col items-center gap-4 w-2/3 max-w-[280px]">
+                    <div className="text-blue-600 font-medium mb-1 animate-pulse flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      AI 正在处理中，请稍候…
+                    </div>
+                    <div className="w-full bg-blue-100/50 rounded-full h-3 overflow-hidden shadow-inner border border-blue-200/50">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-sm font-semibold text-blue-600/70">{Math.round(progress)}%</div>
                   </div>
                 ) : vectorizedSvg ? (
                   <div
