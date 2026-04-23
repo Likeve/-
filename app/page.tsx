@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { UploadCloud, Image as ImageIcon, Download, Loader2, ArrowRight } from "lucide-react";
+import SvgEditor from "./components/SvgEditor";
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -139,7 +140,7 @@ export default function Home() {
         </div>
       )}
 
-      {(originalUrl || isProcessing) && (
+      {(originalUrl || isProcessing) && !vectorizedSvg && (
         <div className="w-full flex flex-col items-center gap-8">
           <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             {/* 原始图片 */}
@@ -164,7 +165,7 @@ export default function Home() {
               <div className="flex items-center gap-2 text-blue-600 font-semibold">
                 <ArrowRight className="w-5 h-5 hidden md:block absolute left-1/2 -translate-x-1/2 z-10 bg-slate-50 p-1 rounded-full text-slate-400" />
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 22h20L12 2z"/></svg>
-                <span>矢量化 SVG 结果</span>
+                <span>正在矢量化</span>
               </div>
               <div className="w-full aspect-square max-h-[500px] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex items-center justify-center relative bg-[url('/checkers.svg')]">
                 {isProcessing ? (
@@ -181,11 +182,6 @@ export default function Home() {
                     </div>
                     <div className="text-sm font-semibold text-blue-600/70">{Math.round(progress)}%</div>
                   </div>
-                ) : vectorizedSvg ? (
-                  <div
-                    className="w-full h-full p-4 flex items-center justify-center"
-                    dangerouslySetInnerHTML={{ __html: vectorizedSvg }}
-                  />
                 ) : error ? (
                   <div className="text-red-500 text-center px-4">
                     <p className="font-bold">处理出错</p>
@@ -208,15 +204,34 @@ export default function Home() {
             >
               重新上传
             </button>
+          </div>
+        </div>
+      )}
+
+      {vectorizedSvg && (
+        <div className="w-full flex flex-col items-center gap-4">
+          <div className="w-full flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <ImageIcon className="w-6 h-6 text-blue-600" />
+              <h3 className="text-xl font-bold text-slate-800">编辑 & 下载</h3>
+            </div>
             <button
-              onClick={handleDownload}
-              disabled={!vectorizedSvg}
-              className="px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => {
+                setFile(null);
+                setOriginalUrl(null);
+                setVectorizedSvg(null);
+                setError(null);
+              }}
+              className="px-5 py-2 rounded-xl font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors text-sm"
             >
-              <Download className="w-5 h-5" />
-              下载 SVG
+              重新上传
             </button>
           </div>
+          
+          <SvgEditor 
+            svgContent={vectorizedSvg} 
+            fileName={file?.name.split(".")[0] || "图片"} 
+          />
         </div>
       )}
     </div>
