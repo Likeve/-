@@ -231,6 +231,12 @@ export default function Home() {
           <SvgEditor 
             svgContent={vectorizedSvg} 
             fileName={file?.name.split(".")[0] || "图片"} 
+            onClose={() => {
+              setFile(null);
+              setOriginalUrl(null);
+              setVectorizedSvg(null);
+              setError(null);
+            }}
           />
         </div>
       )}
